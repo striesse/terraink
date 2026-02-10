@@ -58,6 +58,25 @@ body {
   margin-bottom: 14px;
 }
 
+.brand-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-logo {
+  width: clamp(64px, 7vw, 102px);
+  height: auto;
+  flex: 0 0 auto;
+  margin-left: auto;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+}
+
 .app-kicker {
   margin: 0;
   font-family: "Spline Sans Mono", monospace;
@@ -405,6 +424,10 @@ button[type="submit"] {
 @media (max-width: 760px) {
   .app-shell {
     padding: 14px;
+  }
+
+  .brand-logo {
+    width: 72px;
   }
 
   .field-grid,

@@ -2,7 +2,9 @@
 
 TerraInk: The Cartographic Poster Engine
 
-This app is inspired by the original MapToPoster ![originalankur/maptoposter](https://github.com/originalankur/maptoposter) and is built using Bun, React, and TypeScript. It allows users to create custom city map posters with various styling options, leveraging OpenStreetMap data for accurate and detailed maps.
+This app is inspired by the original MapToPoster [originalankur/maptoposter](https://github.com/originalankur/maptoposter) and is built using Bun, React, and TypeScript. It allows users to create custom city map posters with various styling options, leveraging OpenStreetMap data for accurate and detailed maps.
+
+![](./public/assets/banner.jpg)
 
 ## Run
 
