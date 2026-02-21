@@ -226,13 +226,21 @@ function polygonArea(points) {
   return Math.abs(area) * 0.5;
 }
 
-function drawBuildingLayer(ctx, polygons, projector, theme, bounds, widthScale) {
+function drawBuildingLayer(
+  ctx,
+  polygons,
+  projector,
+  theme,
+  bounds,
+  widthScale,
+) {
   if (!Array.isArray(polygons) || polygons.length === 0) {
     return;
   }
 
   const fillColor =
-    theme.building || blendHex(theme.bg || "#ffffff", theme.text || "#111111", 0.14);
+    theme.building ||
+    blendHex(theme.bg || "#ffffff", theme.text || "#111111", 0.14);
   const strokeColor =
     theme.building_stroke ||
     blendHex(theme.bg || "#ffffff", theme.text || "#111111", 0.26);
@@ -356,7 +364,7 @@ function drawPosterText(
   center,
   city,
   country,
-  fontFamily
+  fontFamily,
 ) {
   const textColor = theme.text || "#111111";
   const titleFontFamily = fontFamily
@@ -382,7 +390,7 @@ function drawPosterText(
   const coordinateFontSize = 58 * dimScale;
   const attributionFontSize = 30 * dimScale;
 
-  const cityY = height * 0.86;
+  const cityY = height * 0.845;
   const lineY = height * 0.875;
   const countryY = height * 0.9;
   const coordinatesY = height * 0.93;
@@ -408,7 +416,7 @@ function drawPosterText(
   ctx.fillText(
     formatCoordinates(center.lat, center.lon),
     width * 0.5,
-    coordinatesY
+    coordinatesY,
   );
   ctx.globalAlpha = 1;
 
@@ -478,10 +486,13 @@ export function renderPoster(canvas, options) {
     projector,
     theme,
     bounds,
-    Math.max(0.7, Math.min(size.width, size.height) / 3600)
+    Math.max(0.7, Math.min(size.width, size.height) / 3600),
   );
 
-  const roadWidthScale = Math.max(0.7, Math.min(size.width, size.height) / 3600);
+  const roadWidthScale = Math.max(
+    0.7,
+    Math.min(size.width, size.height) / 3600,
+  );
   drawRoadLayer(ctx, mapData.roads, projector, theme, roadWidthScale, bounds);
 
   applyFades(ctx, size.width, size.height, theme.gradient_color);
@@ -493,7 +504,7 @@ export function renderPoster(canvas, options) {
     center,
     displayCity,
     displayCountry,
-    fontFamily
+    fontFamily,
   );
 
   return size;

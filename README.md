@@ -67,3 +67,11 @@ docker run -d --name terraink -p 7200:80 --restart unless-stopped terraink:lates
 - Roads, water, parks, and building footprint rendering
 - Typography controls for display labels and optional Google Font family
 - PNG export
+
+## Contributing
+
+Contributions are welcome. Keep changes focused and open a pull request with:
+
+- A short summary of what changed and why
+- Screenshots for UI changes
+- Notes on how you tested (`bun run build` at minimum)

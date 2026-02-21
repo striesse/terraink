@@ -488,6 +488,57 @@ button[type="submit"] {
   margin-top: 7px;
 }
 
+.repo-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.github-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(151, 183, 207, 0.34);
+  background: rgba(9, 18, 27, 0.9);
+  color: #d5e8f7;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    color 0.16s ease;
+}
+
+.github-badge:hover,
+.github-badge:focus-visible {
+  border-color: rgba(120, 179, 214, 0.75);
+  background: rgba(20, 39, 54, 0.95);
+  color: #ecf8ff;
+}
+
+.stars-badge {
+  color: #ffd985;
+  border-color: rgba(255, 208, 105, 0.38);
+}
+
+.stars-badge:hover,
+.stars-badge:focus-visible {
+  color: #ffe7b1;
+  border-color: rgba(255, 220, 138, 0.78);
+  background: rgba(47, 35, 16, 0.9);
+}
+
+.badge-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
 @media (max-width: 1320px) {
   .app-grid {
     grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
