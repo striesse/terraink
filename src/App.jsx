@@ -15,9 +15,21 @@ const DEFAULT_FORM = {
   theme: defaultThemeName,
   displayCity: "",
   displayCountry: "",
-  countryLabel: "",
   fontFamily: "",
 };
+
+const FONT_OPTIONS = [
+  { value: "", label: "Default (Space Grotesk)" },
+  { value: "Montserrat", label: "Montserrat" },
+  { value: "Playfair Display", label: "Playfair Display" },
+  { value: "Oswald", label: "Oswald" },
+  { value: "Noto Sans JP", label: "Noto Sans JP" },
+  { value: "Source Sans Pro", label: "Source Sans Pro" },
+  { value: "Raleway", label: "Raleway" },
+  { value: "Lato", label: "Lato" },
+  { value: "Merriweather", label: "Merriweather" },
+  { value: "bebas neue", label: "Bebas Neue" },
+];
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -109,12 +121,22 @@ export default function App() {
     }));
   }
 
-  function renderWithCachedMap(theme) {
+  function resolveTypography(renderCache) {
+    return {
+      displayCity: form.displayCity.trim() || renderCache.baseCity,
+      displayCountry: form.displayCountry.trim() || renderCache.baseCountry,
+      fontFamily: form.fontFamily.trim(),
+    };
+  }
+
+  function renderWithCachedMap(theme, typographyOverride = null) {
     const renderCache = renderCacheRef.current;
     const canvas = canvasRef.current;
     if (!renderCache || !canvas) {
       return null;
     }
+
+    const typography = typographyOverride ?? resolveTypography(renderCache);
 
     return renderPoster(canvas, {
       theme,
@@ -123,20 +145,41 @@ export default function App() {
       center: renderCache.center,
       widthInches: renderCache.widthInches,
       heightInches: renderCache.heightInches,
-      displayCity: renderCache.displayCity,
-      displayCountry: renderCache.displayCountry,
-      fontFamily: renderCache.fontFamily,
+      displayCity: typography.displayCity,
+      displayCountry: typography.displayCountry,
+      fontFamily: typography.fontFamily,
     });
   }
 
   useEffect(() => {
-    const size = renderWithCachedMap(selectedTheme);
-    if (!size) {
+    const renderCache = renderCacheRef.current;
+    if (!renderCache) {
       return;
     }
 
-    setResult((prev) => (prev ? { ...prev, size } : prev));
-  }, [selectedTheme]);
+    const typography = resolveTypography(renderCache);
+    let cancelled = false;
+
+    async function rerenderPreview() {
+      await ensureGoogleFont(typography.fontFamily);
+      if (cancelled) {
+        return;
+      }
+
+      const size = renderWithCachedMap(selectedTheme, typography);
+      if (!size) {
+        return;
+      }
+
+      setResult((prev) => (prev ? { ...prev, size } : prev));
+    }
+
+    rerenderPreview();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTheme, form.displayCity, form.displayCountry, form.fontFamily]);
 
   async function handleGenerate(event) {
     event.preventDefault();
@@ -167,20 +210,34 @@ export default function App() {
       let center = null;
       const latText = form.latitude.trim();
       const lonText = form.longitude.trim();
+      const previousCity =
+        renderCacheRef.current?.baseCity?.trim().toLowerCase() ?? "";
+      const previousCountry =
+        renderCacheRef.current?.baseCountry?.trim().toLowerCase() ?? "";
+      const cityChanged =
+        city.toLowerCase() !== previousCity ||
+        country.toLowerCase() !== previousCountry;
+      const shouldGeocode = !latText || !lonText || cityChanged;
+      let displayCity = form.displayCity.trim() || city;
+      let displayCountry = form.displayCountry.trim() || country;
+      const fontFamily = form.fontFamily.trim();
 
-      if (latText || lonText) {
-        if (!latText || !lonText) {
-          throw new Error(
-            "Provide both latitude and longitude, or leave both empty for automatic geocoding.",
-          );
-        }
-
+      if (shouldGeocode) {
+        setStatus("Geocoding city...");
+        center = await geocodeCity(city, country);
+        displayCity = city;
+        displayCountry = country;
+        setForm((prev) => ({
+          ...prev,
+          latitude: center.lat.toFixed(6),
+          longitude: center.lon.toFixed(6),
+          displayCity,
+          displayCountry,
+        }));
+      } else {
         const lat = parseNumericInput("Latitude", latText);
         const lon = parseNumericInput("Longitude", lonText);
         center = { lat, lon, displayName: "Manual coordinates" };
-      } else {
-        setStatus("Geocoding city...");
-        center = await geocodeCity(city, country);
       }
 
       setStatus("Loading OpenStreetMap features...");
@@ -205,11 +262,7 @@ export default function App() {
       }
 
       setStatus("Rendering poster...");
-      await ensureGoogleFont(form.fontFamily);
-
-      const displayCity = form.displayCity.trim() || city;
-      const displayCountry =
-        form.displayCountry.trim() || form.countryLabel.trim() || country;
+      await ensureGoogleFont(fontFamily);
 
       renderCacheRef.current = {
         mapData,
@@ -217,12 +270,15 @@ export default function App() {
         center,
         widthInches,
         heightInches,
-        displayCity,
-        displayCountry,
-        fontFamily: form.fontFamily.trim(),
+        baseCity: city,
+        baseCountry: country,
       };
 
-      const size = renderWithCachedMap(selectedTheme);
+      const size = renderWithCachedMap(selectedTheme, {
+        displayCity,
+        displayCountry,
+        fontFamily,
+      });
       if (!size) {
         throw new Error("Canvas is not available.");
       }
@@ -416,26 +472,23 @@ export default function App() {
                 />
               </label>
             </div>
-            <div className="field-grid">
-              <label>
-                Country label override
-                <input
-                  name="countryLabel"
-                  value={form.countryLabel}
-                  onChange={handleChange}
-                  placeholder="United States"
-                />
-              </label>
-              <label>
-                Google Font family
-                <input
-                  name="fontFamily"
-                  value={form.fontFamily}
-                  onChange={handleChange}
-                  placeholder="Noto Sans JP"
-                />
-              </label>
-            </div>
+            <label>
+              Font
+              <select
+                name="fontFamily"
+                value={form.fontFamily}
+                onChange={handleChange}
+              >
+                {FONT_OPTIONS.map((fontOption) => (
+                  <option
+                    key={fontOption.value || "default"}
+                    value={fontOption.value}
+                  >
+                    {fontOption.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </section>
 
           <div className="action-row">
