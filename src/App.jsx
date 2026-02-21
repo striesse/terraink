@@ -1,18 +1,18 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { computePosterAndFetchBounds } from "./lib/geo";
 import { fetchMapData, geocodeCity } from "./lib/osm";
 import { renderPoster } from "./lib/posterRenderer";
-import { getTheme, themeNames } from "./lib/themes";
+import { defaultThemeName, getTheme, themeOptions } from "./lib/themes";
 
 const DEFAULT_FORM = {
   city: "Paris",
   country: "France",
   latitude: "",
   longitude: "",
-  distance: "12000",
+  distance: "4000",
   width: "12",
   height: "16",
-  theme: "blueprint",
+  theme: defaultThemeName,
   displayCity: "",
   displayCountry: "",
   countryLabel: "",
@@ -84,6 +84,7 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState(null);
   const canvasRef = useRef(null);
+  const renderCacheRef = useRef(null);
 
   const selectedTheme = useMemo(() => getTheme(form.theme), [form.theme]);
   const themePalette = useMemo(
@@ -107,6 +108,35 @@ export default function App() {
       [name]: value,
     }));
   }
+
+  function renderWithCachedMap(theme) {
+    const renderCache = renderCacheRef.current;
+    const canvas = canvasRef.current;
+    if (!renderCache || !canvas) {
+      return null;
+    }
+
+    return renderPoster(canvas, {
+      theme,
+      mapData: renderCache.mapData,
+      bounds: renderCache.bounds,
+      center: renderCache.center,
+      widthInches: renderCache.widthInches,
+      heightInches: renderCache.heightInches,
+      displayCity: renderCache.displayCity,
+      displayCountry: renderCache.displayCountry,
+      fontFamily: renderCache.fontFamily,
+    });
+  }
+
+  useEffect(() => {
+    const size = renderWithCachedMap(selectedTheme);
+    if (!size) {
+      return;
+    }
+
+    setResult((prev) => (prev ? { ...prev, size } : prev));
+  }, [selectedTheme]);
 
   async function handleGenerate(event) {
     event.preventDefault();
@@ -177,17 +207,11 @@ export default function App() {
       setStatus("Rendering poster...");
       await ensureGoogleFont(form.fontFamily);
 
-      const canvas = canvasRef.current;
-      if (!canvas) {
-        throw new Error("Canvas is not available.");
-      }
-
       const displayCity = form.displayCity.trim() || city;
       const displayCountry =
         form.displayCountry.trim() || form.countryLabel.trim() || country;
 
-      const size = renderPoster(canvas, {
-        theme: selectedTheme,
+      renderCacheRef.current = {
         mapData,
         bounds: posterBounds,
         center,
@@ -196,7 +220,12 @@ export default function App() {
         displayCity,
         displayCountry,
         fontFamily: form.fontFamily.trim(),
-      });
+      };
+
+      const size = renderWithCachedMap(selectedTheme);
+      if (!size) {
+        throw new Error("Canvas is not available.");
+      }
 
       setResult({
         size,
@@ -248,14 +277,20 @@ export default function App() {
       <header className="app-header">
         <div className="brand-row">
           <div className="brand-copy">
-            <p className="app-kicker">TerraInk: The Cartographic Poster Engine</p>
+            <p className="app-kicker">
+              TerraInk: The Cartographic Poster Engine
+            </p>
             <h1>TerraInk</h1>
             <p className="app-copy">
               Build high-detail map posters from OpenStreetMap data with curated
               palettes, custom typography, and print-ready PNG output.
             </p>
           </div>
-          <img className="brand-logo" src="/assets/logo.svg" alt="TerraInk logo" />
+          <img
+            className="brand-logo"
+            src="/assets/logo.svg"
+            alt="TerraInk logo"
+          />
         </div>
       </header>
 
@@ -312,14 +347,11 @@ export default function App() {
             <label>
               Theme
               <select name="theme" value={form.theme} onChange={handleChange}>
-                {themeNames.map((name) => {
-                  const theme = getTheme(name);
-                  return (
-                    <option key={name} value={name}>
-                      {name} - {theme.name}
-                    </option>
-                  );
-                })}
+                {themeOptions.map((themeOption) => (
+                  <option key={themeOption.id} value={themeOption.id}>
+                    {themeOption.name}
+                  </option>
+                ))}
               </select>
             </label>
             <p className="theme-note">{selectedTheme.description}</p>

@@ -1,6 +1,4 @@
-const themeModules = import.meta.glob("../themes/*.json", {
-  eager: true,
-});
+import themesManifest from "../themes/themes.json";
 
 const fallbackTheme = {
   name: "Terracotta",
@@ -18,25 +16,45 @@ const fallbackTheme = {
   road_default: "#D9A08A",
 };
 
-const themesByName = Object.entries(themeModules).reduce((acc, [path, module]) => {
-  const fileName = path.split("/").pop();
-  const key = fileName ? fileName.replace(".json", "") : "";
-  const value = module.default ?? module;
-  if (key) {
+const rawThemes =
+  themesManifest &&
+  typeof themesManifest === "object" &&
+  themesManifest.themes &&
+  typeof themesManifest.themes === "object"
+    ? themesManifest.themes
+    : {};
+
+const themesByName = Object.entries(rawThemes).reduce((acc, [key, value]) => {
+  if (key && value && typeof value === "object") {
     acc[key] = value;
   }
   return acc;
 }, {});
 
-export const themeNames = Object.keys(themesByName).sort();
+export const themeNames = Object.entries(themesByName)
+  .sort(([, left], [, right]) =>
+    String(left?.name ?? "").localeCompare(String(right?.name ?? "")),
+  )
+  .map(([name]) => name);
+
+export const themeOptions = themeNames.map((name) => ({
+  id: name,
+  name: String(themesByName[name]?.name ?? name),
+}));
+
+const preferredDefaultThemeName = "midnight_blue";
+
+export const defaultThemeName = themeNames.includes(preferredDefaultThemeName)
+  ? preferredDefaultThemeName
+  : (themeNames[0] ?? preferredDefaultThemeName);
 
 export function getTheme(themeName) {
   if (themesByName[themeName]) {
     return themesByName[themeName];
   }
 
-  if (themesByName.terracotta) {
-    return themesByName.terracotta;
+  if (defaultThemeName && themesByName[defaultThemeName]) {
+    return themesByName[defaultThemeName];
   }
 
   return fallbackTheme;
