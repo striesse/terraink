@@ -4,13 +4,19 @@ import { fetchMapData, geocodeLocation, searchLocations } from "./lib/osm";
 import { renderPoster } from "./lib/posterRenderer";
 import { defaultThemeName, getTheme, themeOptions } from "./lib/themes";
 
+const CM_PER_INCH = 2.54;
+const DEFAULT_POSTER_WIDTH_CM = 20;
+const DEFAULT_POSTER_HEIGHT_CM = 30;
+const MIN_POSTER_CM = 5;
+const MAX_POSTER_CM = 60;
+
 const DEFAULT_FORM = {
   location: "Hanover, Germany",
   latitude: "",
   longitude: "",
   distance: "4000",
-  width: "12",
-  height: "16",
+  width: String(DEFAULT_POSTER_WIDTH_CM),
+  height: String(DEFAULT_POSTER_HEIGHT_CM),
   theme: defaultThemeName,
   displayCity: "",
   displayCountry: "",
@@ -113,6 +119,7 @@ export default function App() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
   const [result, setResult] = useState(null);
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [isLocationSearching, setIsLocationSearching] = useState(false);
@@ -196,6 +203,28 @@ export default function App() {
     });
   }
 
+  async function runProgressTask(startPercent, endPercent, message, task) {
+    const safeStart = clamp(Math.round(startPercent), 0, 100);
+    const safeEnd = clamp(Math.round(endPercent), safeStart, 100);
+    setStatus(message);
+    setGenerationProgress((prev) => Math.max(prev, safeStart));
+
+    let current = safeStart;
+    const maxWhileRunning = Math.max(safeStart, safeEnd - 2);
+    const stepSize = Math.max(1, Math.round((safeEnd - safeStart) / 8));
+    const timerId = window.setInterval(() => {
+      current = Math.min(current + stepSize, maxWhileRunning);
+      setGenerationProgress((prev) => Math.max(prev, current));
+    }, 250);
+
+    try {
+      return await task();
+    } finally {
+      window.clearInterval(timerId);
+      setGenerationProgress((prev) => Math.max(prev, safeEnd));
+    }
+  }
+
   useEffect(() => {
     const query = form.location.trim();
     if (!isLocationFocused || query.length < 2) {
@@ -264,20 +293,30 @@ export default function App() {
     setError("");
     setStatus("");
     setResult(null);
+    setGenerationProgress(0);
     setIsGenerating(true);
 
     try {
+      setStatus("Validating input...");
+      setGenerationProgress(8);
+
       const locationText = form.location.trim();
       if (!locationText) {
         throw new Error("Location is required.");
       }
 
-      const widthInches = clamp(parseNumericInput("Width", form.width), 1, 20);
-      const heightInches = clamp(
-        parseNumericInput("Height", form.height),
-        1,
-        20,
+      const widthCm = clamp(
+        parseNumericInput("Width", form.width),
+        MIN_POSTER_CM,
+        MAX_POSTER_CM,
       );
+      const heightCm = clamp(
+        parseNumericInput("Height", form.height),
+        MIN_POSTER_CM,
+        MAX_POSTER_CM,
+      );
+      const widthInches = widthCm / CM_PER_INCH;
+      const heightInches = heightCm / CM_PER_INCH;
       const distanceMeters = clamp(
         parseNumericInput("Distance", form.distance),
         1_000,
@@ -310,11 +349,16 @@ export default function App() {
           lon: parseNumericInput("Longitude", lonText),
         };
       } else {
-        setStatus("Geocoding location...");
-        resolvedLocation = await geocodeLocation(locationText);
+        resolvedLocation = await runProgressTask(
+          12,
+          30,
+          "Geocoding location...",
+          () => geocodeLocation(locationText),
+        );
         setSelectedLocation(resolvedLocation);
         shouldAutofillFromLocation = true;
       }
+      setGenerationProgress((prev) => Math.max(prev, 30));
 
       const resolvedCity =
         resolvedLocation.city || fallbackParts.city || locationText;
@@ -347,16 +391,21 @@ export default function App() {
           : prev.displayCountry,
       }));
 
-      setStatus("Loading OpenStreetMap features...");
       const aspectRatio = widthInches / heightInches;
       const { posterBounds, fetchBounds } = computePosterAndFetchBounds(
         center,
         distanceMeters,
         aspectRatio,
       );
-      const mapData = await fetchMapData(fetchBounds, {
-        buildingBounds: posterBounds,
-      });
+      const mapData = await runProgressTask(
+        35,
+        72,
+        "Loading OpenStreetMap features...",
+        () =>
+          fetchMapData(fetchBounds, {
+            buildingBounds: posterBounds,
+          }),
+      );
       if (
         mapData.roads.length === 0 &&
         mapData.waterPolygons.length === 0 &&
@@ -368,8 +417,9 @@ export default function App() {
         );
       }
 
-      setStatus("Rendering poster...");
-      await ensureGoogleFont(fontFamily);
+      await runProgressTask(74, 84, "Loading typography...", () =>
+        ensureGoogleFont(fontFamily),
+      );
 
       renderCacheRef.current = {
         mapData,
@@ -382,6 +432,8 @@ export default function App() {
         baseLocation: resolvedLocation.label || locationText,
       };
 
+      setStatus("Rendering poster...");
+      setGenerationProgress((prev) => Math.max(prev, 90));
       const size = renderWithCachedMap(selectedTheme, {
         displayCity,
         displayCountry,
@@ -398,14 +450,16 @@ export default function App() {
         water: mapData.waterPolygons.length,
         parks: mapData.parkPolygons.length,
         buildings: mapData.buildingPolygons.length,
-        widthInches,
-        heightInches,
+        widthCm,
+        heightCm,
         distanceMeters,
       });
+      setGenerationProgress(100);
       setStatus("Poster ready.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unexpected error";
       setError(message);
+      setGenerationProgress(0);
       setStatus("");
     } finally {
       setIsGenerating(false);
@@ -551,24 +605,24 @@ export default function App() {
                 />
               </label>
               <label>
-                Width (in)
+                Width (cm)
                 <input
                   name="width"
                   type="number"
-                  min="1"
-                  max="20"
+                  min={MIN_POSTER_CM}
+                  max={MAX_POSTER_CM}
                   step="0.1"
                   value={form.width}
                   onChange={handleChange}
                 />
               </label>
               <label>
-                Height (in)
+                Height (cm)
                 <input
                   name="height"
                   type="number"
-                  min="1"
-                  max="20"
+                  min={MIN_POSTER_CM}
+                  max={MAX_POSTER_CM}
                   step="0.1"
                   value={form.height}
                   onChange={handleChange}
@@ -620,7 +674,9 @@ export default function App() {
 
           <div className="action-row">
             <button type="submit" disabled={isGenerating}>
-              {isGenerating ? "Generating..." : "Generate Poster"}
+              {isGenerating
+                ? `Generating... ${generationProgress}%`
+                : "Generate Poster"}
             </button>
             <button
               type="button"
@@ -647,7 +703,24 @@ export default function App() {
             }}
           >
             <canvas ref={canvasRef} />
-            {!result ? (
+            {isGenerating ? (
+              <div className="preview-loading" role="status" aria-live="polite">
+                <p className="loading-title">{status || "Generating poster..."}</p>
+                <div
+                  className="loading-track"
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={generationProgress}
+                >
+                  <span
+                    className="loading-fill"
+                    style={{ width: `${generationProgress}%` }}
+                  />
+                </div>
+                <p className="loading-meta">{generationProgress}% complete</p>
+              </div>
+            ) : !result ? (
               <div className="preview-placeholder">
                 Generate a poster to see the preview.
               </div>
@@ -686,6 +759,10 @@ export default function App() {
                 <p>
                   Output: {result.size.width}x{result.size.height}px
                   {result.size.downscaleFactor < 1 ? " (downscaled)" : ""}
+                </p>
+                <p>
+                  Print size: {result.widthCm.toFixed(1)}x
+                  {result.heightCm.toFixed(1)} cm
                 </p>
               </>
             ) : (
