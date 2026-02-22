@@ -18,6 +18,7 @@ function createFallbackThemeOption(themeId, selectedTheme) {
 export default function MapSettingsSection({
   form,
   onChange,
+  onNumericFieldBlur,
   onThemeChange,
   onLayoutChange,
   selectedTheme,
@@ -98,6 +99,7 @@ export default function MapSettingsSection({
             max={MAX_DISTANCE_METERS}
             value={form.distance}
             onChange={onChange}
+            onBlur={onNumericFieldBlur}
           />
         </label>
         <label>
@@ -110,6 +112,7 @@ export default function MapSettingsSection({
             step="0.1"
             value={form.width}
             onChange={onChange}
+            onBlur={onNumericFieldBlur}
           />
         </label>
         <label>
@@ -122,6 +125,7 @@ export default function MapSettingsSection({
             step="0.1"
             value={form.height}
             onChange={onChange}
+            onBlur={onNumericFieldBlur}
           />
         </label>
       </div>

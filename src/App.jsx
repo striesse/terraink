@@ -85,32 +85,18 @@ export default function App() {
     }
 
     if (name === "width" || name === "height") {
-      let nextValue = value;
-      const parsed = Number(value);
-      if (value !== "" && Number.isFinite(parsed)) {
-        nextValue = String(clamp(parsed, MIN_POSTER_CM, MAX_POSTER_CM));
-      }
-
       setForm((prev) => ({
         ...prev,
-        [name]: nextValue,
+        [name]: value,
         layout: CUSTOM_LAYOUT_ID,
       }));
       return;
     }
 
     if (name === "distance") {
-      let nextValue = value;
-      const parsed = Number(value);
-      if (value !== "" && Number.isFinite(parsed)) {
-        nextValue = String(
-          Math.round(clamp(parsed, MIN_DISTANCE_METERS, MAX_DISTANCE_METERS)),
-        );
-      }
-
       setForm((prev) => ({
         ...prev,
-        distance: nextValue,
+        distance: value,
       }));
       return;
     }
@@ -119,6 +105,39 @@ export default function App() {
       ...prev,
       [name]: value,
     }));
+  }
+
+  function handleNumericFieldBlur(event) {
+    const { name, value } = event.target;
+    const trimmed = String(value ?? "").trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed)) {
+      return;
+    }
+
+    if (name === "distance") {
+      const nextValue = String(
+        Math.round(clamp(parsed, MIN_DISTANCE_METERS, MAX_DISTANCE_METERS)),
+      );
+      setForm((prev) => ({
+        ...prev,
+        distance: nextValue,
+      }));
+      return;
+    }
+
+    if (name === "width" || name === "height") {
+      const nextValue = String(clamp(parsed, MIN_POSTER_CM, MAX_POSTER_CM));
+      setForm((prev) => ({
+        ...prev,
+        [name]: nextValue,
+        layout: CUSTOM_LAYOUT_ID,
+      }));
+    }
   }
 
   function handleClearLocation() {
@@ -480,6 +499,7 @@ export default function App() {
           form={form}
           onSubmit={handleGenerate}
           onChange={handleChange}
+          onNumericFieldBlur={handleNumericFieldBlur}
           onThemeChange={handleThemeChange}
           onLayoutChange={handleLayoutChange}
           selectedTheme={selectedTheme}

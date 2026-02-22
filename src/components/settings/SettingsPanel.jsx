@@ -6,6 +6,7 @@ export default function SettingsPanel({
   form,
   onSubmit,
   onChange,
+  onNumericFieldBlur,
   onThemeChange,
   onLayoutChange,
   selectedTheme,
@@ -45,6 +46,7 @@ export default function SettingsPanel({
       <MapSettingsSection
         form={form}
         onChange={onChange}
+        onNumericFieldBlur={onNumericFieldBlur}
         onThemeChange={onThemeChange}
         onLayoutChange={onLayoutChange}
         selectedTheme={selectedTheme}
