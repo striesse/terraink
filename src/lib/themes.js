@@ -16,14 +16,28 @@ const fallbackTheme = {
   road_default: "#D9A08A",
 };
 
-const themePaletteKeys = [
+const hexColorPattern = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
+const colorReferencePattern = /^\$([a-zA-Z0-9_]+)$/;
+const displayPaletteKeys = [
   "bg",
   "water",
   "parks",
+  "road_motorway",
   "road_primary",
   "road_secondary",
-  "road_residential",
+  "road_tertiary",
   "text",
+];
+const preferredThemeOrder = [
+  "midnight_blue",
+  "terracotta",
+  "neon_cyberpunk",
+  "coral",
+  "heatwave",
+  "ruby",
+  "sage",
+  "copper",
+  "rustic",
 ];
 
 const rawThemes =
@@ -41,16 +55,107 @@ const themesByName = Object.entries(rawThemes).reduce((acc, [key, value]) => {
   return acc;
 }, {});
 
-export const themeNames = Object.entries(themesByName)
-  .sort(([, left], [, right]) =>
-    String(left?.name ?? "").localeCompare(String(right?.name ?? "")),
-  )
-  .map(([name]) => name);
+const discoveredThemeNames = Object.keys(themesByName);
+const preferredThemeNames = preferredThemeOrder.filter((themeId) =>
+  discoveredThemeNames.includes(themeId),
+);
+const remainingThemeNames = discoveredThemeNames.filter(
+  (themeId) => !preferredThemeOrder.includes(themeId),
+);
+
+export const themeNames = [...preferredThemeNames, ...remainingThemeNames];
+
+function resolveThemeColor(theme, key, visitedKeys = new Set()) {
+  const rawValue = theme?.[key];
+  if (typeof rawValue !== "string") {
+    return "";
+  }
+
+  const value = rawValue.trim();
+  if (hexColorPattern.test(value)) {
+    return value;
+  }
+
+  const referenceMatch = value.match(colorReferencePattern);
+  if (!referenceMatch) {
+    return "";
+  }
+
+  const referencedKey = referenceMatch[1];
+  if (visitedKeys.has(referencedKey)) {
+    return "";
+  }
+
+  const nextVisitedKeys = new Set(visitedKeys);
+  nextVisitedKeys.add(referencedKey);
+  return resolveThemeColor(theme, referencedKey, nextVisitedKeys);
+}
+
+function resolveThemeAliases(theme) {
+  if (!theme || typeof theme !== "object") {
+    return {};
+  }
+
+  const resolved = {};
+  for (const key of Object.keys(theme)) {
+    if (key === "name" || key === "description") {
+      resolved[key] = String(theme[key] ?? "");
+      continue;
+    }
+
+    const color = resolveThemeColor(theme, key, new Set([key]));
+    if (color) {
+      resolved[key] = color;
+    }
+  }
+
+  return resolved;
+}
+
+function normalizeTheme(theme) {
+  const resolvedTheme = resolveThemeAliases(theme);
+  const mergedTheme = {
+    ...fallbackTheme,
+    ...resolvedTheme,
+  };
+
+  mergedTheme.gradient_color = mergedTheme.gradient_color || mergedTheme.bg;
+  mergedTheme.road_motorway =
+    mergedTheme.road_motorway || mergedTheme.road_primary || mergedTheme.text;
+  mergedTheme.road_primary =
+    mergedTheme.road_primary || mergedTheme.road_secondary || mergedTheme.text;
+  mergedTheme.road_secondary =
+    mergedTheme.road_secondary ||
+    mergedTheme.road_primary ||
+    mergedTheme.road_tertiary ||
+    mergedTheme.text;
+  mergedTheme.road_tertiary =
+    mergedTheme.road_tertiary ||
+    mergedTheme.road_secondary ||
+    mergedTheme.road_residential ||
+    mergedTheme.text;
+  mergedTheme.road_residential =
+    mergedTheme.road_residential ||
+    mergedTheme.road_tertiary ||
+    mergedTheme.road_secondary ||
+    mergedTheme.text;
+  mergedTheme.road_default =
+    mergedTheme.road_default ||
+    mergedTheme.road_tertiary ||
+    mergedTheme.road_secondary ||
+    mergedTheme.road_residential ||
+    mergedTheme.road_primary ||
+    mergedTheme.text;
+
+  return mergedTheme;
+}
 
 export function getThemePalette(theme) {
-  return themePaletteKeys
-    .map((key) => theme?.[key])
-    .filter((value) => typeof value === "string" && value.trim().length > 0);
+  const normalizedTheme = normalizeTheme(theme);
+
+  return displayPaletteKeys
+    .map((key) => String(normalizedTheme[key] ?? "").trim())
+    .filter((color) => hexColorPattern.test(color));
 }
 
 export const themeOptions = themeNames.map((name) => ({
@@ -68,12 +173,12 @@ export const defaultThemeName = themeNames.includes(preferredDefaultThemeName)
 
 export function getTheme(themeName) {
   if (themesByName[themeName]) {
-    return themesByName[themeName];
+    return normalizeTheme(themesByName[themeName]);
   }
 
   if (defaultThemeName && themesByName[defaultThemeName]) {
-    return themesByName[defaultThemeName];
+    return normalizeTheme(themesByName[defaultThemeName]);
   }
 
-  return fallbackTheme;
+  return normalizeTheme(fallbackTheme);
 }
