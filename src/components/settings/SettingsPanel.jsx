@@ -7,8 +7,10 @@ export default function SettingsPanel({
   onSubmit,
   onChange,
   onThemeChange,
+  onLayoutChange,
   selectedTheme,
   themeOptions,
+  layoutGroups,
   minPosterCm,
   maxPosterCm,
   fontOptions,
@@ -44,8 +46,10 @@ export default function SettingsPanel({
         form={form}
         onChange={onChange}
         onThemeChange={onThemeChange}
+        onLayoutChange={onLayoutChange}
         selectedTheme={selectedTheme}
         themeOptions={themeOptions}
+        layoutGroups={layoutGroups}
         minPosterCm={minPosterCm}
         maxPosterCm={maxPosterCm}
       />

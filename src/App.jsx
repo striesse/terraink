@@ -19,6 +19,12 @@ import {
 import { useLocationAutocomplete } from "./hooks/useLocationAutocomplete";
 import { useRepoStars } from "./hooks/useRepoStars";
 import { computePosterAndFetchBounds } from "./lib/geo";
+import {
+  CUSTOM_LAYOUT_ID,
+  formatLayoutCm,
+  getLayoutOption,
+  layoutGroups,
+} from "./lib/layouts";
 import { fetchMapData, geocodeLocation } from "./lib/osm";
 import { renderPoster } from "./lib/posterRenderer";
 import { getTheme, themeOptions } from "./lib/themes";
@@ -76,6 +82,15 @@ export default function App() {
       return;
     }
 
+    if (name === "width" || name === "height") {
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+        layout: CUSTOM_LAYOUT_ID,
+      }));
+      return;
+    }
+
     setForm((prev) => ({
       ...prev,
       [name]: value,
@@ -95,6 +110,20 @@ export default function App() {
     setForm((prev) => ({
       ...prev,
       theme: themeId,
+    }));
+  }
+
+  function handleLayoutChange(layoutId) {
+    const layoutOption = getLayoutOption(layoutId);
+    if (!layoutOption) {
+      return;
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      layout: layoutOption.id,
+      width: formatLayoutCm(layoutOption.widthCm),
+      height: formatLayoutCm(layoutOption.heightCm),
     }));
   }
 
@@ -428,8 +457,10 @@ export default function App() {
           onSubmit={handleGenerate}
           onChange={handleChange}
           onThemeChange={handleThemeChange}
+          onLayoutChange={handleLayoutChange}
           selectedTheme={selectedTheme}
           themeOptions={themeOptions}
+          layoutGroups={layoutGroups}
           minPosterCm={MIN_POSTER_CM}
           maxPosterCm={MAX_POSTER_CM}
           fontOptions={FONT_OPTIONS}

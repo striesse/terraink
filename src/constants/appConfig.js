@@ -1,3 +1,4 @@
+import { defaultLayoutId, getLayoutOption } from "../lib/layouts";
 import { defaultThemeName } from "../lib/themes";
 
 export const CM_PER_INCH = 2.54;
@@ -5,6 +6,10 @@ export const DEFAULT_POSTER_WIDTH_CM = 20;
 export const DEFAULT_POSTER_HEIGHT_CM = 30;
 export const MIN_POSTER_CM = 5;
 export const MAX_POSTER_CM = 60;
+
+const defaultLayoutOption = getLayoutOption(defaultLayoutId);
+const defaultLayoutWidthCm = Number(defaultLayoutOption?.widthCm ?? DEFAULT_POSTER_WIDTH_CM);
+const defaultLayoutHeightCm = Number(defaultLayoutOption?.heightCm ?? DEFAULT_POSTER_HEIGHT_CM);
 
 export const REPO_URL = import.meta.env.VITE_REPO_URL;
 export const REPO_API_URL = import.meta.env.VITE_REPO_API_URL;
@@ -17,9 +22,10 @@ export const DEFAULT_FORM = {
   latitude: "",
   longitude: "",
   distance: "4000",
-  width: String(DEFAULT_POSTER_WIDTH_CM),
-  height: String(DEFAULT_POSTER_HEIGHT_CM),
+  width: String(defaultLayoutWidthCm),
+  height: String(defaultLayoutHeightCm),
   theme: defaultThemeName,
+  layout: defaultLayoutId,
   displayCity: "",
   displayCountry: "",
   fontFamily: "",

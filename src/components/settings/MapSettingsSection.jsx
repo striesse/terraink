@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
+import { createCustomLayoutOption } from "../../lib/layouts";
+import LayoutCard from "./LayoutCard";
+import PickerModal from "./PickerModal";
 import ThemeCard from "./ThemeCard";
-import ThemeModal from "./ThemeModal";
 
 function createFallbackThemeOption(themeId, selectedTheme) {
   return {
@@ -23,12 +25,14 @@ export default function MapSettingsSection({
   form,
   onChange,
   onThemeChange,
+  onLayoutChange,
   selectedTheme,
   themeOptions,
+  layoutGroups,
   minPosterCm,
   maxPosterCm,
 }) {
-  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
+  const [activePicker, setActivePicker] = useState("");
 
   const selectedThemeOption = useMemo(() => {
     const matchingOption = themeOptions.find((themeOption) => themeOption.id === form.theme);
@@ -38,17 +42,40 @@ export default function MapSettingsSection({
     return createFallbackThemeOption(form.theme, selectedTheme);
   }, [form.theme, selectedTheme, themeOptions]);
 
-  function openThemeModal() {
-    setIsThemeModalOpen(true);
+  const layoutOptions = useMemo(
+    () => layoutGroups.flatMap((group) => group.options),
+    [layoutGroups],
+  );
+
+  const selectedLayoutOption = useMemo(() => {
+    const matchingOption = layoutOptions.find((layoutOption) => layoutOption.id === form.layout);
+    if (matchingOption) {
+      return matchingOption;
+    }
+
+    return createCustomLayoutOption(form.width, form.height);
+  }, [form.height, form.layout, form.width, layoutOptions]);
+
+  function openThemePicker() {
+    setActivePicker("theme");
   }
 
-  function closeThemeModal() {
-    setIsThemeModalOpen(false);
+  function openLayoutPicker() {
+    setActivePicker("layout");
+  }
+
+  function closePicker() {
+    setActivePicker("");
   }
 
   function handleThemeSelect(themeId) {
     onThemeChange(themeId);
-    setIsThemeModalOpen(false);
+    closePicker();
+  }
+
+  function handleLayoutSelect(layoutId) {
+    onLayoutChange(layoutId);
+    closePicker();
   }
 
   return (
@@ -58,7 +85,13 @@ export default function MapSettingsSection({
       <ThemeCard
         themeOption={selectedThemeOption}
         showName={false}
-        onClick={openThemeModal}
+        onClick={openThemePicker}
+      />
+
+      <p className="layout-active-label">Layout: {selectedLayoutOption.name}</p>
+      <LayoutCard
+        layoutOption={selectedLayoutOption}
+        onClick={openLayoutPicker}
       />
 
       <div className="field-grid triple">
@@ -99,13 +132,52 @@ export default function MapSettingsSection({
         </label>
       </div>
 
-      <ThemeModal
-        open={isThemeModalOpen}
-        themeOptions={themeOptions}
-        selectedThemeId={form.theme}
-        onSelectTheme={handleThemeSelect}
-        onClose={closeThemeModal}
-      />
+      <PickerModal
+        open={activePicker === "theme"}
+        title="Choose Theme"
+        titleId="theme-picker-title"
+        onClose={closePicker}
+      >
+        <div className="picker-option-list">
+          {themeOptions.map((themeOption) => (
+            <ThemeCard
+              key={themeOption.id}
+              themeOption={themeOption}
+              isSelected={themeOption.id === form.theme}
+              onClick={() => handleThemeSelect(themeOption.id)}
+            />
+          ))}
+        </div>
+      </PickerModal>
+
+      <PickerModal
+        open={activePicker === "layout"}
+        title="Choose Layout"
+        titleId="layout-picker-title"
+        onClose={closePicker}
+      >
+        <div className="layout-picker-groups">
+          {layoutGroups.map((group) => (
+            <section
+              key={group.id}
+              className="layout-picker-group"
+              aria-label={group.name}
+            >
+              <h4>{group.name}</h4>
+              <div className="picker-option-list">
+                {group.options.map((layoutOption) => (
+                  <LayoutCard
+                    key={layoutOption.id}
+                    layoutOption={layoutOption}
+                    isSelected={layoutOption.id === form.layout}
+                    onClick={() => handleLayoutSelect(layoutOption.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </PickerModal>
     </section>
   );
 }

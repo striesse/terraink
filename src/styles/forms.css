@@ -136,6 +136,13 @@ select:focus {
   color: #d9e7f2;
 }
 
+.layout-active-label {
+  margin: 0 0 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #d9e7f2;
+}
+
 button.theme-card {
   width: 100%;
   margin: 0 0 10px;
@@ -186,7 +193,74 @@ button.theme-card:focus-visible {
   color: #b9cfde;
 }
 
-.theme-modal-backdrop {
+.layout-card {
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 10px;
+  text-align: left;
+  border: 1px solid rgba(151, 183, 207, 0.34);
+  border-radius: 12px;
+  background: rgba(9, 18, 27, 0.86);
+}
+
+.layout-card.is-selected {
+  border-color: rgba(112, 184, 222, 0.8);
+  box-shadow: 0 0 0 2px rgba(75, 149, 186, 0.22);
+}
+
+.layout-card:not(:disabled):hover,
+.layout-card:focus-visible {
+  transform: none;
+  filter: none;
+  border-color: rgba(112, 184, 222, 0.78);
+  background: rgba(20, 38, 52, 0.94);
+}
+
+.layout-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.layout-card-copy {
+  min-width: 0;
+}
+
+.layout-card-name {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #e7f2fb;
+}
+
+.layout-card-meta {
+  margin: 5px 0 0;
+  font-family: "Spline Sans Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  color: #9fbcd0;
+  text-transform: uppercase;
+}
+
+.layout-card-symbol {
+  width: 76px;
+  height: 48px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  border: 1px solid rgba(151, 183, 207, 0.24);
+  background: rgba(8, 17, 24, 0.9);
+  padding: 3px;
+}
+
+.layout-card-description {
+  margin: 8px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.42;
+  color: #b9cfde;
+}
+
+.picker-modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 9999;
@@ -198,7 +272,7 @@ button.theme-card:focus-visible {
   backdrop-filter: blur(3px);
 }
 
-.theme-modal {
+.picker-modal {
   width: min(560px, 100%);
   max-height: 86vh;
   display: flex;
@@ -210,7 +284,7 @@ button.theme-card:focus-visible {
   box-shadow: 0 28px 52px rgba(0, 0, 0, 0.55);
 }
 
-.theme-modal-header {
+.picker-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -218,7 +292,7 @@ button.theme-card:focus-visible {
   margin-bottom: 10px;
 }
 
-.theme-modal-header h3 {
+.picker-modal-header h3 {
   margin: 0;
   font-family: "Spline Sans Mono", monospace;
   text-transform: uppercase;
@@ -227,7 +301,7 @@ button.theme-card:focus-visible {
   color: #8cb6d0;
 }
 
-button.theme-modal-close {
+button.picker-modal-close {
   width: 28px;
   height: 28px;
   margin: 0;
@@ -243,39 +317,58 @@ button.theme-modal-close {
   justify-content: center;
 }
 
-button.theme-modal-close:not(:disabled):hover,
-button.theme-modal-close:focus-visible {
+button.picker-modal-close:not(:disabled):hover,
+button.picker-modal-close:focus-visible {
   transform: none;
   filter: none;
   background: rgba(47, 79, 102, 0.95);
 }
 
-.theme-modal-list {
+.picker-modal-body {
   overflow-y: auto;
-  display: grid;
-  gap: 8px;
+  display: block;
   padding-right: 3px;
 }
 
-.theme-modal-list .theme-card {
+.picker-option-list {
+  display: grid;
+  gap: 8px;
+}
+
+.picker-option-list .theme-card,
+.picker-option-list .layout-card {
   margin: 0;
 }
 
-.theme-modal-footer {
+.layout-picker-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.layout-picker-group h4 {
+  margin: 0 0 7px;
+  font-family: "Spline Sans Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  color: #87adc4;
+}
+
+.picker-modal-footer {
   margin-top: 10px;
   display: flex;
   justify-content: flex-end;
 }
 
-button.theme-modal-done {
+button.picker-modal-done {
   border: 1px solid rgba(151, 183, 207, 0.42);
   background: rgba(20, 38, 52, 0.94);
   color: #e6f2fb;
   padding: 8px 12px;
 }
 
-button.theme-modal-done:not(:disabled):hover,
-button.theme-modal-done:focus-visible {
+button.picker-modal-done:not(:disabled):hover,
+button.picker-modal-done:focus-visible {
   transform: none;
   filter: none;
   background: rgba(47, 79, 102, 0.95);
@@ -372,11 +465,11 @@ button.location-clear-btn:focus-visible {
     flex-direction: column;
   }
 
-  .theme-modal-backdrop {
+  .picker-modal-backdrop {
     padding: 8px;
   }
 
-  .theme-modal {
+  .picker-modal {
     max-height: 92vh;
     padding: 10px;
   }

@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import ThemeCard from "./ThemeCard";
 
-export default function ThemeModal({
+export default function PickerModal({
   open,
-  themeOptions,
-  selectedThemeId,
-  onSelectTheme,
+  title,
+  titleId,
   onClose,
+  doneLabel = "Done",
+  children,
 }) {
   useEffect(() => {
     if (!open) {
@@ -30,49 +30,42 @@ export default function ThemeModal({
     return null;
   }
 
+  const resolvedTitleId = titleId || "picker-modal-title";
+
   const modalMarkup = (
     <div
-      className="theme-modal-backdrop"
+      className="picker-modal-backdrop"
       role="presentation"
       onClick={onClose}
     >
       <div
-        className="theme-modal"
+        className="picker-modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="theme-modal-title"
+        aria-labelledby={resolvedTitleId}
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="theme-modal-header">
-          <h3 id="theme-modal-title">Choose Theme</h3>
+        <div className="picker-modal-header">
+          <h3 id={resolvedTitleId}>{title}</h3>
           <button
             type="button"
-            className="theme-modal-close"
+            className="picker-modal-close"
             onClick={onClose}
-            aria-label="Close theme picker"
+            aria-label={`Close ${title}`}
           >
             x
           </button>
         </div>
 
-        <div className="theme-modal-list">
-          {themeOptions.map((themeOption) => (
-            <ThemeCard
-              key={themeOption.id}
-              themeOption={themeOption}
-              isSelected={themeOption.id === selectedThemeId}
-              onClick={() => onSelectTheme(themeOption.id)}
-            />
-          ))}
-        </div>
+        <div className="picker-modal-body">{children}</div>
 
-        <div className="theme-modal-footer">
+        <div className="picker-modal-footer">
           <button
             type="button"
-            className="theme-modal-done"
+            className="picker-modal-done"
             onClick={onClose}
           >
-            Done
+            {doneLabel}
           </button>
         </div>
       </div>
