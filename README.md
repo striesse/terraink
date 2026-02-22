@@ -31,12 +31,8 @@ All showcase images are stored in `public/assets/screenshots/`.
 ### Featured Examples
 
 <p align="center">
-  <img src="./public/assets/screenshots/rio.png" alt="Rio de Janeiro poster generated with TerraInk" width="49%" />
-  <img src="./public/assets/screenshots/seattle.png" alt="Seatlle poster generated with TerraInk" width="49%" />
-    <img src="./public/assets/screenshots/tokyo.png" alt="Tokio poster generated with TerraInk" width="49%" />
-  <img src="./public/assets/screenshots/venice.png" alt="Venice poster generated with TerraInk" width="49%" />
-     <img src="./public/assets/screenshots/london.png" alt="London poster generated with TerraInk" width="49%" />
-  <img src="./public/assets/screenshots/budapest.png" alt="Budapest poster generated with TerraInk" width="49%" />
+  <img src="./public/assets/showcase/showcase_1.png" alt="Featured showcase example 1" width="100%" />
+  <img src="./public/assets/showcase/showcase_2.png" alt="Featured showcase example 2" width="100%" />
 </p>
 
 ## Run
@@ -113,8 +109,22 @@ docker run -d --name terraink -p 7200:80 --restart unless-stopped terraink:lates
 
 ## Contributing
 
-Contributions are welcome. Keep changes focused and open a pull request with:
+Contributions are welcome.
 
-- A short summary of what changed and why
-- Screenshots for UI changes
-- Notes on how you tested (`bun run build` at minimum)
+Please follow this flow:
+
+1. Pick an existing issue, or open a new issue first to discuss the bug/feature.
+2. Implement the fix/feature in a focused change.
+3. Open a pull request after the work is complete.
+4. Run tests/checks before opening the PR (`bun run build` at minimum) and verify everything works.
+5. If possible, add a small screenshot for UI updates.
+
+Code quality expectations:
+
+- Keep code clean, readable, and reusable.
+- If something is used in multiple places, extract it into a shared component.
+- Reuse existing components when they already cover the use case.
+- Prefer short, focused functions over long functions.
+- Compose small functions/components through clear abstractions and interfaces.
+- Follow naming conventions consistently.
+- Add concise comments where the intent is not obvious.
