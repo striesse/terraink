@@ -21,7 +21,12 @@ export function computePosterAndFetchBounds(
   const fetchHalfMeters = Math.max(halfMetersX, halfMetersY) * fetchPadding;
 
   return {
-    posterBounds: createBounds(center.lat, center.lon, halfMetersX, halfMetersY),
+    posterBounds: createBounds(
+      center.lat,
+      center.lon,
+      halfMetersX,
+      halfMetersY,
+    ),
     fetchBounds: createBounds(
       center.lat,
       center.lon,
@@ -38,7 +43,7 @@ export function formatCoordinates(lat, lon) {
   const northSouth = lat >= 0 ? "N" : "S";
   const eastWest = lon >= 0 ? "E" : "W";
 
-  return `${Math.abs(lat).toFixed(4)} deg ${northSouth} / ${Math.abs(lon).toFixed(
+  return `${Math.abs(lat).toFixed(4)}° ${northSouth} / ${Math.abs(lon).toFixed(
     4,
-  )} deg ${eastWest}`;
+  )}° ${eastWest}`;
 }
