@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
 const PRESET_COLORS = [
-  "#000000", "#1a1a2e", "#16213e", "#0f3460", "#533483",
-  "#e94560", "#ff6b6b", "#ff8c00", "#ffd700", "#ffffff",
-  "#f0f0f0", "#808080", "#4a4a4a", "#2d4a3e", "#1a6b4f",
-  "#4caf50", "#00bcd4", "#2196f3", "#3f51b5", "#9c27b0",
-  "#e91e63", "#ff5722", "#795548", "#607d8b",
+  "#000000", "#ffffff", "#ff0000", "#00ff00", "#0000ff", 
+  "#ffff00", "#00ffff", "#ff00ff", "#ff8000", "#8000ff",
+  "#808080", "#c0c0c0", "#404040", "#800000", "#008000",
+  "#000080", "#808000", "#008080", "#800080", "#ff6666",
+  "#66ff66", "#6666ff", "#ffcc00", "#00ccff",
 ];
 
 function hexToRgb(hex) {
@@ -32,7 +32,7 @@ function rgbToHex(r, g, b) {
   );
 }
 
-export default function ColorPicker({ currentColor, onChange }) {
+export default function ColorPicker({ currentColor, onChange, onClose }) {
   const [hexInput, setHexInput] = useState(currentColor);
   const [rgb, setRgb] = useState(() => hexToRgb(currentColor));
   const nativePickerRef = useRef(null);
@@ -44,6 +44,7 @@ export default function ColorPicker({ currentColor, onChange }) {
 
   function handlePresetClick(color) {
     onChange(color);
+    onClose?.();
   }
 
   function handleHexInput(e) {

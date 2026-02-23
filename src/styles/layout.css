@@ -84,6 +84,8 @@
   padding: 14px;
   position: sticky;
   top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
 }
 
 .preview-panel {

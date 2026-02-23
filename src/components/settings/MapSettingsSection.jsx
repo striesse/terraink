@@ -149,6 +149,7 @@ export default function MapSettingsSection({
                   FALLBACK_COLOR
                 }
                 onChange={(color) => onColorChange(activeColorKey, color)}
+                onClose={() => setActiveColorKey(null)}
               />
             )}
 
