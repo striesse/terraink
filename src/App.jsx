@@ -8,6 +8,7 @@ import {
   CM_PER_INCH,
   CONTACT_EMAIL,
   DEFAULT_FORM,
+  LAYOUT_MATCH_TOLERANCE_CM,
   LEGAL_NOTICE_URL,
   MAX_DISTANCE_METERS,
   MAX_POSTER_CM,
@@ -22,7 +23,6 @@ import { useLocationAutocomplete } from "./hooks/useLocationAutocomplete";
 import { useRepoStars } from "./hooks/useRepoStars";
 import { computePosterAndFetchBounds } from "./lib/geo";
 import {
-  CUSTOM_LAYOUT_ID,
   formatLayoutCm,
   getLayoutOption,
   layoutGroups,
@@ -32,11 +32,16 @@ import { renderPoster } from "./lib/posterRenderer";
 import { getTheme, themeOptions } from "./lib/themes";
 import { createPosterFilename } from "./utils/download";
 import { ensureGoogleFont } from "./utils/font";
+import {
+  normalizePosterSizeValue,
+  resolveLayoutIdForSize,
+} from "./utils/layoutSelection";
 import { parseLocationParts } from "./utils/location";
 import { clamp, parseNumericInput } from "./utils/number";
 
 export default function App() {
   const [form, setForm] = useState(DEFAULT_FORM);
+  const [customColors, setCustomColors] = useState({});
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -49,6 +54,12 @@ export default function App() {
   const renderCacheRef = useRef(null);
 
   const selectedTheme = useMemo(() => getTheme(form.theme), [form.theme]);
+  const effectiveTheme = useMemo(() => {
+    if (Object.keys(customColors).length === 0) {
+      return selectedTheme;
+    }
+    return { ...selectedTheme, ...customColors };
+  }, [selectedTheme, customColors]);
 
   const {
     locationSuggestions,
@@ -88,7 +99,6 @@ export default function App() {
       setForm((prev) => ({
         ...prev,
         [name]: value,
-        layout: CUSTOM_LAYOUT_ID,
       }));
       return;
     }
@@ -131,12 +141,33 @@ export default function App() {
     }
 
     if (name === "width" || name === "height") {
-      const nextValue = String(clamp(parsed, MIN_POSTER_CM, MAX_POSTER_CM));
-      setForm((prev) => ({
-        ...prev,
-        [name]: nextValue,
-        layout: CUSTOM_LAYOUT_ID,
-      }));
+      const normalizedChangedValue = clamp(parsed, MIN_POSTER_CM, MAX_POSTER_CM);
+      setForm((prev) => {
+        const nextWidth = normalizePosterSizeValue(
+          name === "width" ? normalizedChangedValue : prev.width,
+          normalizedChangedValue,
+          MIN_POSTER_CM,
+          MAX_POSTER_CM,
+        );
+        const nextHeight = normalizePosterSizeValue(
+          name === "height" ? normalizedChangedValue : prev.height,
+          normalizedChangedValue,
+          MIN_POSTER_CM,
+          MAX_POSTER_CM,
+        );
+
+        return {
+          ...prev,
+          width: formatLayoutCm(nextWidth),
+          height: formatLayoutCm(nextHeight),
+          layout: resolveLayoutIdForSize(
+            nextWidth,
+            nextHeight,
+            prev.layout,
+            LAYOUT_MATCH_TOLERANCE_CM,
+          ),
+        };
+      });
     }
   }
 
@@ -150,10 +181,19 @@ export default function App() {
   }
 
   function handleThemeChange(themeId) {
+    setCustomColors({});
     setForm((prev) => ({
       ...prev,
       theme: themeId,
     }));
+  }
+
+  function handleColorChange(key, value) {
+    setCustomColors((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function handleResetColors() {
+    setCustomColors({});
   }
 
   function handleLayoutChange(layoutId) {
@@ -244,7 +284,7 @@ export default function App() {
     let cancelled = false;
 
     async function rerenderPreview() {
-      const size = renderWithCachedMap(selectedTheme, typography);
+      const size = renderWithCachedMap(effectiveTheme, typography);
       if (!size) {
         return;
       }
@@ -260,7 +300,7 @@ export default function App() {
         return;
       }
 
-      const refreshedSize = renderWithCachedMap(selectedTheme, typography);
+      const refreshedSize = renderWithCachedMap(effectiveTheme, typography);
       if (!refreshedSize) {
         return;
       }
@@ -273,7 +313,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [selectedTheme, form.displayCity, form.displayCountry, form.fontFamily]);
+  }, [effectiveTheme, form.displayCity, form.displayCountry, form.fontFamily]);
 
   async function handleGenerate(event) {
     event.preventDefault();
@@ -430,7 +470,7 @@ export default function App() {
 
       setStatus("Rendering poster...");
       setGenerationProgress((prev) => Math.max(prev, 90));
-      const size = renderWithCachedMap(selectedTheme, {
+      const size = renderWithCachedMap(effectiveTheme, {
         displayCity,
         displayCountry,
         fontFamily,
@@ -523,6 +563,9 @@ export default function App() {
           onLocationBlur={() => {
             window.setTimeout(() => setIsLocationFocused(false), 120);
           }}
+          customColors={customColors}
+          onColorChange={handleColorChange}
+          onResetColors={handleResetColors}
         />
 
         <PreviewPanel
