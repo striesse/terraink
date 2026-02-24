@@ -1,5 +1,10 @@
 import { resolveCanvasSize } from "./canvas";
-import { applyFades, drawBuildingLayer, drawPolygonLayer, drawRoadLayer } from "./layers";
+import {
+  applyFades,
+  drawBuildingLayer,
+  drawPolygonLayer,
+  drawRoadLayer,
+} from "./layers";
 import { createProjector } from "./projection";
 import { drawPosterText } from "./typography";
 
@@ -14,6 +19,7 @@ export function renderPoster(canvas, options) {
     displayCity,
     displayCountry,
     fontFamily,
+    showPosterText = true,
   } = options;
 
   const size = resolveCanvasSize(widthInches, heightInches);
@@ -41,7 +47,10 @@ export function renderPoster(canvas, options) {
     Math.max(0.7, Math.min(size.width, size.height) / 3600),
   );
 
-  const roadWidthScale = Math.max(0.7, Math.min(size.width, size.height) / 3600);
+  const roadWidthScale = Math.max(
+    0.7,
+    Math.min(size.width, size.height) / 3600,
+  );
   drawRoadLayer(ctx, mapData.roads, projector, theme, roadWidthScale, bounds);
 
   applyFades(ctx, size.width, size.height, theme.gradient_color);
@@ -54,6 +63,7 @@ export function renderPoster(canvas, options) {
     displayCity,
     displayCountry,
     fontFamily,
+    showPosterText,
   );
 
   return size;
@@ -66,7 +76,11 @@ export {
   drawPolygonLayer,
   drawRoadLayer,
 } from "./layers";
-export { createProjector, polygonArea, pointsIntersectBounds } from "./projection";
+export {
+  createProjector,
+  polygonArea,
+  pointsIntersectBounds,
+} from "./projection";
 export { parseHex, blendHex, withAlpha } from "./colors";
 export { roadStyle, normalizeRoadType } from "./road";
 export { drawPosterText, isLatinScript } from "./typography";

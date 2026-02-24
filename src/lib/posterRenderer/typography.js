@@ -33,6 +33,7 @@ export function drawPosterText(
   city,
   country,
   fontFamily,
+  showPosterText,
 ) {
   const textColor = theme.text || "#111111";
   const titleFontFamily = fontFamily
@@ -44,44 +45,52 @@ export function drawPosterText(
 
   const dimScale = Math.max(0.45, Math.min(width, height) / 3600);
 
-  const cityLabel = isLatinScript(city) ? city.toUpperCase().split("").join("  ") : city;
-  const cityLength = Math.max(city.length, 1);
-
-  let cityFontSize = 250 * dimScale;
-  if (cityLength > 10) {
-    cityFontSize = Math.max(110 * dimScale, cityFontSize * (10 / cityLength));
-  }
-
-  const countryFontSize = 92 * dimScale;
-  const coordinateFontSize = 58 * dimScale;
   const attributionFontSize = 30 * dimScale;
 
-  const cityY = height * 0.845;
-  const lineY = height * 0.875;
-  const countryY = height * 0.9;
-  const coordinatesY = height * 0.93;
+  if (showPosterText) {
+    const cityLabel = isLatinScript(city)
+      ? city.toUpperCase().split("").join("  ")
+      : city;
+    const cityLength = Math.max(city.length, 1);
+    let cityFontSize = 250 * dimScale;
+    if (cityLength > 10) {
+      cityFontSize = Math.max(110 * dimScale, cityFontSize * (10 / cityLength));
+    }
+
+    const countryFontSize = 92 * dimScale;
+    const coordinateFontSize = 58 * dimScale;
+    const cityY = height * 0.845;
+    const lineY = height * 0.875;
+    const countryY = height * 0.9;
+    const coordinatesY = height * 0.93;
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `700 ${cityFontSize}px ${titleFontFamily}`;
+    ctx.fillText(cityLabel, width * 0.5, cityY);
+
+    ctx.strokeStyle = textColor;
+    ctx.lineWidth = 3 * dimScale;
+    ctx.beginPath();
+    ctx.moveTo(width * 0.4, lineY);
+    ctx.lineTo(width * 0.6, lineY);
+    ctx.stroke();
+
+    ctx.font = `300 ${countryFontSize}px ${titleFontFamily}`;
+    ctx.fillText(country.toUpperCase(), width * 0.5, countryY);
+
+    ctx.globalAlpha = 0.75;
+    ctx.font = `400 ${coordinateFontSize}px ${bodyFontFamily}`;
+    ctx.fillText(
+      formatCoordinates(center.lat, center.lon),
+      width * 0.5,
+      coordinatesY,
+    );
+    ctx.globalAlpha = 1;
+  }
 
   ctx.fillStyle = textColor;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `700 ${cityFontSize}px ${titleFontFamily}`;
-  ctx.fillText(cityLabel, width * 0.5, cityY);
-
-  ctx.strokeStyle = textColor;
-  ctx.lineWidth = 3 * dimScale;
-  ctx.beginPath();
-  ctx.moveTo(width * 0.4, lineY);
-  ctx.lineTo(width * 0.6, lineY);
-  ctx.stroke();
-
-  ctx.font = `300 ${countryFontSize}px ${titleFontFamily}`;
-  ctx.fillText(country.toUpperCase(), width * 0.5, countryY);
-
-  ctx.globalAlpha = 0.75;
-  ctx.font = `400 ${coordinateFontSize}px ${bodyFontFamily}`;
-  ctx.fillText(formatCoordinates(center.lat, center.lon), width * 0.5, coordinatesY);
-  ctx.globalAlpha = 1;
-
   ctx.globalAlpha = 0.55;
   ctx.textAlign = "right";
   ctx.textBaseline = "bottom";

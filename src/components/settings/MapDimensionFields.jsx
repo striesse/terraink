@@ -13,7 +13,7 @@ export default function MapDimensionFields({
         <label>
           Width (cm)
           <input
-            className="map-dimension-input"
+            className="form-control-tall"
             name="width"
             type="number"
             min={minPosterCm}
@@ -27,7 +27,7 @@ export default function MapDimensionFields({
         <label>
           Height (cm)
           <input
-            className="map-dimension-input"
+            className="form-control-tall"
             name="height"
             type="number"
             min={minPosterCm}
@@ -42,7 +42,7 @@ export default function MapDimensionFields({
       <label>
         Distance (m)
         <input
-          className="map-dimension-input"
+          className="form-control-tall"
           name="distance"
           type="number"
           min={MIN_DISTANCE_METERS}

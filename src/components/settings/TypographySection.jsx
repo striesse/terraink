@@ -2,10 +2,24 @@ export default function TypographySection({ form, onChange, fontOptions }) {
   return (
     <section className="panel-block">
       <h2>Typography</h2>
-      <div className="field-grid">
+      <label className="toggle-field">
+        <span>Poster text</span>
+        <span className="theme-switch">
+          <input
+            type="checkbox"
+            name="showPosterText"
+            checked={Boolean(form.showPosterText)}
+            onChange={onChange}
+          />
+          <span className="theme-switch-track" aria-hidden="true" />
+        </span>
+      </label>
+
+      <div className="field-grid keep-two-mobile">
         <label>
           Display city
           <input
+            className="form-control-tall"
             name="displayCity"
             value={form.displayCity}
             onChange={onChange}
@@ -15,6 +29,7 @@ export default function TypographySection({ form, onChange, fontOptions }) {
         <label>
           Display country
           <input
+            className="form-control-tall"
             name="displayCountry"
             value={form.displayCountry}
             onChange={onChange}
@@ -24,7 +39,12 @@ export default function TypographySection({ form, onChange, fontOptions }) {
       </div>
       <label>
         Font
-        <select name="fontFamily" value={form.fontFamily} onChange={onChange}>
+        <select
+          className="form-control-tall"
+          name="fontFamily"
+          value={form.fontFamily}
+          onChange={onChange}
+        >
           {fontOptions.map((fontOption) => (
             <option key={fontOption.value || "default"} value={fontOption.value}>
               {fontOption.label}

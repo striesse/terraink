@@ -75,7 +75,7 @@ export default function App() {
   const hasFooterLinks = Boolean(contactEmail || legalNoticeUrl || privacyUrl);
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
     if (name === "location") {
       setSelectedLocation(null);
       setForm((prev) => ({
@@ -107,6 +107,14 @@ export default function App() {
       setForm((prev) => ({
         ...prev,
         distance: value,
+      }));
+      return;
+    }
+
+    if (name === "showPosterText" && type === "checkbox") {
+      setForm((prev) => ({
+        ...prev,
+        showPosterText: checked,
       }));
       return;
     }
@@ -227,6 +235,7 @@ export default function App() {
       displayCity: form.displayCity.trim() || renderCache.baseCity,
       displayCountry: form.displayCountry.trim() || renderCache.baseCountry,
       fontFamily: form.fontFamily.trim(),
+      showPosterText: form.showPosterText !== false,
     };
   }
 
@@ -249,6 +258,7 @@ export default function App() {
       displayCity: typography.displayCity,
       displayCountry: typography.displayCountry,
       fontFamily: typography.fontFamily,
+      showPosterText: typography.showPosterText,
     });
   }
 
@@ -291,7 +301,7 @@ export default function App() {
 
       setResult((prev) => (prev ? { ...prev, size } : prev));
 
-      if (!typography.fontFamily) {
+      if (!typography.showPosterText || !typography.fontFamily) {
         return;
       }
 
@@ -313,7 +323,13 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [effectiveTheme, form.displayCity, form.displayCountry, form.fontFamily]);
+  }, [
+    effectiveTheme,
+    form.displayCity,
+    form.displayCountry,
+    form.fontFamily,
+    form.showPosterText,
+  ]);
 
   async function handleGenerate(event) {
     event.preventDefault();
@@ -408,6 +424,7 @@ export default function App() {
       }
 
       const fontFamily = form.fontFamily.trim();
+      const showPosterText = form.showPosterText !== false;
       const center = {
         lat: resolvedLocation.lat,
         lon: resolvedLocation.lon,
@@ -453,9 +470,13 @@ export default function App() {
         );
       }
 
-      await runProgressTask(74, 84, "Loading typography...", () =>
-        ensureGoogleFont(fontFamily),
-      );
+      if (showPosterText && fontFamily) {
+        await runProgressTask(74, 84, "Loading typography...", () =>
+          ensureGoogleFont(fontFamily),
+        );
+      } else {
+        setGenerationProgress((prev) => Math.max(prev, 84));
+      }
 
       renderCacheRef.current = {
         mapData,
@@ -474,6 +495,7 @@ export default function App() {
         displayCity,
         displayCountry,
         fontFamily,
+        showPosterText,
       });
 
       if (!size) {

@@ -32,6 +32,7 @@ export const DEFAULT_FORM = {
   displayCity: "",
   displayCountry: "",
   fontFamily: "",
+  showPosterText: true,
 };
 
 export const FONT_OPTIONS = [

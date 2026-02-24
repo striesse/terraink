@@ -19,6 +19,7 @@ export default function LocationSection({
         <div className="location-autocomplete">
           <div className="location-input-wrap">
             <input
+              className="form-control-tall"
               name="location"
               value={form.location}
               onChange={onChange}
@@ -64,10 +65,11 @@ export default function LocationSection({
           ) : null}
         </div>
       </label>
-      <div className="field-grid">
+      <div className="field-grid keep-two-mobile">
         <label>
           Latitude (optional)
           <input
+            className="form-control-tall"
             name="latitude"
             value={form.latitude}
             onChange={onChange}
@@ -77,6 +79,7 @@ export default function LocationSection({
         <label>
           Longitude (optional)
           <input
+            className="form-control-tall"
             name="longitude"
             value={form.longitude}
             onChange={onChange}
