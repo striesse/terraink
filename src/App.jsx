@@ -8,6 +8,7 @@ import {
   CM_PER_INCH,
   CONTACT_EMAIL,
   DEFAULT_FORM,
+  LAYOUT_MATCH_TOLERANCE_CM,
   LEGAL_NOTICE_URL,
   MAX_DISTANCE_METERS,
   MAX_POSTER_CM,
@@ -22,7 +23,6 @@ import { useLocationAutocomplete } from "./hooks/useLocationAutocomplete";
 import { useRepoStars } from "./hooks/useRepoStars";
 import { computePosterAndFetchBounds } from "./lib/geo";
 import {
-  CUSTOM_LAYOUT_ID,
   formatLayoutCm,
   getLayoutOption,
   layoutGroups,
@@ -32,6 +32,10 @@ import { renderPoster } from "./lib/posterRenderer";
 import { getTheme, themeOptions } from "./lib/themes";
 import { createPosterFilename } from "./utils/download";
 import { ensureGoogleFont } from "./utils/font";
+import {
+  normalizePosterSizeValue,
+  resolveLayoutIdForSize,
+} from "./utils/layoutSelection";
 import { parseLocationParts } from "./utils/location";
 import { clamp, parseNumericInput } from "./utils/number";
 
@@ -95,7 +99,6 @@ export default function App() {
       setForm((prev) => ({
         ...prev,
         [name]: value,
-        layout: CUSTOM_LAYOUT_ID,
       }));
       return;
     }
@@ -138,12 +141,33 @@ export default function App() {
     }
 
     if (name === "width" || name === "height") {
-      const nextValue = String(clamp(parsed, MIN_POSTER_CM, MAX_POSTER_CM));
-      setForm((prev) => ({
-        ...prev,
-        [name]: nextValue,
-        layout: CUSTOM_LAYOUT_ID,
-      }));
+      const normalizedChangedValue = clamp(parsed, MIN_POSTER_CM, MAX_POSTER_CM);
+      setForm((prev) => {
+        const nextWidth = normalizePosterSizeValue(
+          name === "width" ? normalizedChangedValue : prev.width,
+          normalizedChangedValue,
+          MIN_POSTER_CM,
+          MAX_POSTER_CM,
+        );
+        const nextHeight = normalizePosterSizeValue(
+          name === "height" ? normalizedChangedValue : prev.height,
+          normalizedChangedValue,
+          MIN_POSTER_CM,
+          MAX_POSTER_CM,
+        );
+
+        return {
+          ...prev,
+          width: formatLayoutCm(nextWidth),
+          height: formatLayoutCm(nextHeight),
+          layout: resolveLayoutIdForSize(
+            nextWidth,
+            nextHeight,
+            prev.layout,
+            LAYOUT_MATCH_TOLERANCE_CM,
+          ),
+        };
+      });
     }
   }
 
