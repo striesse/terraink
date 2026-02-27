@@ -1,6 +1,6 @@
 ![](./public/assets/banner.jpg)
 
-# TerraInk
+# TerraInk - striesse test version
 
 [![Bun Badge](https://img.shields.io/badge/Bun-000?logo=bun&logoColor=fff&style=for-the-badge)](https://bun.sh)
 [![Vite Badge](https://img.shields.io/badge/Vite-9135FF?logo=vite&logoColor=fff&style=for-the-badge)](https://vitejs.dev)
