@@ -10,7 +10,7 @@
 [![OpenStreetMap Badge](https://img.shields.io/badge/OpenStreetMap-7EBC6F?logo=openstreetmap&logoColor=fff&style=for-the-badge)](https://www.openstreetmap.org)
 [![License](https://img.shields.io/badge/License-Mit-000?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-TerraInk: The Cartographic Poster Engine
+TerraInk: The Cartographic Poster Engine - striesse test version
 
 App link: [https://terraink.app](https://terraink.app)
 
