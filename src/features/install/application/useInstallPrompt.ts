@@ -12,6 +12,10 @@ function isIos(): boolean {
   );
 }
 
+function isAndroid(): boolean {
+  return /android/i.test(navigator.userAgent);
+}
+
 function isInStandaloneMode(): boolean {
   return (
     ("standalone" in window.navigator
@@ -24,6 +28,7 @@ export default function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [showIosHint, setShowIosHint] = useState(false);
+  const [showAndroidHint, setShowAndroidHint] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -38,6 +43,9 @@ export default function useInstallPrompt() {
     if (isIos()) {
       setShowIosHint(true);
       return;
+    }
+    if (isAndroid()) {
+      setShowAndroidHint(true);
     }
 
     const handler = (e: Event) => {
@@ -59,6 +67,7 @@ export default function useInstallPrompt() {
     localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
     setDismissed(true);
     setShowIosHint(false);
+    setShowAndroidHint(false);
     setDeferredPrompt(null);
   }
 
@@ -72,6 +81,7 @@ export default function useInstallPrompt() {
   return {
     deferredPrompt,
     showIosHint,
+    showAndroidHint,
     dismissed,
     dismiss,
     handleInstall,

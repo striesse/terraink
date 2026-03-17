@@ -30,8 +30,14 @@ export default function MobileInstallNudgeModal({
   open,
   onClose,
 }: MobileInstallNudgeModalProps) {
-  const { deferredPrompt, showIosHint, dismissed, dismiss, handleInstall } =
-    useInstallPrompt();
+  const {
+    deferredPrompt,
+    showIosHint,
+    showAndroidHint,
+    dismissed,
+    dismiss,
+    handleInstall,
+  } = useInstallPrompt();
   const [isMobileView, setIsMobileView] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [showNudge, setShowNudge] = useState(true);
@@ -182,6 +188,30 @@ export default function MobileInstallNudgeModal({
                     Then choose{" "}
                     <span className="install-help-emphasis">
                       Add to Home Screen
+                    </span>
+                    .
+                  </span>
+                </li>
+              </ol>
+            ) : showAndroidHint ? (
+              <ol className="install-help-steps">
+                <li>
+                  <span className="install-help-step-icon" aria-hidden="true">
+                    <ShareIcon />
+                  </span>
+                  <span>
+                    Tap <span className="install-help-emphasis">Share</span> or
+                    the browser menu.
+                  </span>
+                </li>
+                <li>
+                  <span className="install-help-step-icon" aria-hidden="true">
+                    <AddToHomeIcon />
+                  </span>
+                  <span>
+                    Then choose{" "}
+                    <span className="install-help-emphasis">
+                      Add to Home screen
                     </span>
                     .
                   </span>

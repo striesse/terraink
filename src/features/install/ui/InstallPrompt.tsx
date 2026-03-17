@@ -15,8 +15,14 @@ interface InstallPromptProps {
 export default function InstallPrompt({
   variant = "banner",
 }: InstallPromptProps) {
-  const { deferredPrompt, showIosHint, dismissed, dismiss, handleInstall } =
-    useInstallPrompt();
+  const {
+    deferredPrompt,
+    showIosHint,
+    showAndroidHint,
+    dismissed,
+    dismiss,
+    handleInstall,
+  } = useInstallPrompt();
   const [hintOpen, setHintOpen] = useState(false);
 
   if (variant === "header") {
@@ -97,6 +103,37 @@ export default function InstallPrompt({
                         </span>
                       </li>
                     </ol>
+                  ) : showAndroidHint ? (
+                    <ol className="install-help-steps">
+                      <li>
+                        <span
+                          className="install-help-step-icon"
+                          aria-hidden="true"
+                        >
+                          <ShareIcon />
+                        </span>
+                        <span>
+                          Tap{" "}
+                          <span className="install-help-emphasis">Share</span> or
+                          the browser menu.
+                        </span>
+                      </li>
+                      <li>
+                        <span
+                          className="install-help-step-icon"
+                          aria-hidden="true"
+                        >
+                          <AddToHomeIcon />
+                        </span>
+                        <span>
+                          Then choose{" "}
+                          <span className="install-help-emphasis">
+                            Add to Home screen
+                          </span>
+                          .
+                        </span>
+                      </li>
+                    </ol>
                   ) : (
                     <p className="install-help-modal-text">
                       Install is not available right now in this browser
@@ -144,7 +181,7 @@ export default function InstallPrompt({
     );
   }
 
-  if (showIosHint) {
+  if (showIosHint || showAndroidHint) {
     return (
       <div className="install-prompt" role="complementary">
         <span className="install-prompt-text">
@@ -156,7 +193,8 @@ export default function InstallPrompt({
           <span className="install-prompt-share-icon" aria-hidden="true">
             <ShareIcon />
           </span>{" "}
-          <span className="install-help-emphasis">Share</span>, then{" "}
+          <span className="install-help-emphasis">Share</span> or browser menu,
+          then{" "}
           <span className="install-help-emphasis">Add to Home Screen</span> to
           install TerraInk for quick access.
         </span>
