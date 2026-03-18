@@ -28,7 +28,7 @@ export default function InstallPrompt() {
               className="install-prompt-mobile-icon"
               aria-hidden="true"
             />
-            Add TerraInk to your home screen for quick access
+            Install TerraInk for faster access and a better experience.
           </span>
           <div className="install-prompt-actions">
             <button
@@ -79,8 +79,8 @@ export default function InstallPrompt() {
             <span className="install-prompt-share-icon" aria-hidden="true">
               <ShareIcon />
             </span>{" "}
-            then <strong>Add to Home Screen</strong> to install TerraInk for quick
-            access
+            then <strong>Add to Home Screen</strong> for faster access and a
+            better experience.
           </span>
           <div className="install-prompt-actions">
             <button
@@ -120,7 +120,8 @@ export default function InstallPrompt() {
               className="install-prompt-mobile-icon"
               aria-hidden="true"
             />
-            Install TerraInk from your browser menu:
+            For faster access and a better experience, install TerraInk from
+            your browser menu:
             <strong> Install app </strong>
             or
             <strong> Add to Home screen</strong>
